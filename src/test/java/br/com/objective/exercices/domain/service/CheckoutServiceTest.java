@@ -3,13 +3,16 @@ package br.com.objective.exercices.domain.service;
 import br.com.objective.exercices.api.client.FreightClient;
 import br.com.objective.exercices.domain.model.ShoppingCart;
 import br.com.objective.exercices.domain.model.User;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
+import java.util.function.Supplier;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -19,46 +22,74 @@ public class CheckoutServiceTest {
 
     @Test
     public void getPurchaseAmount_evaluatePurchaseAmountWithFreightRate_returningTwenty() {
-        FreightClient freightClient = mock(FreightClient.class);
-        ShoppingCart shoppingCart = mock(ShoppingCart.class);
-        User user = mock(User.class);
-
-        String zipCode = "85440000";
-
-        subject = new CheckoutService(freightClient, shoppingCart, new BigDecimal(100));
-
-        when(user.getZipCode()).thenReturn(zipCode);
-        when(shoppingCart.getUser()).thenReturn(user);
-        when(shoppingCart.getTotalCartValue()).thenReturn(BigDecimal.TEN);
-        when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(BigDecimal.TEN);
-
-        BigDecimal purchaseAmountWithFreightRate = subject.getPurchaseAmount();
-
-        verify(freightClient, atMost(1)).getFreightRateByZipCode(zipCode);
-
-        Assert.assertEquals(BigDecimal.valueOf(20), purchaseAmountWithFreightRate);
+        given()
+            .withFreightRate()
+        .when(subject::getPurchaseAmount)
+        .then()
+            .assertAmountCharged(BigDecimal.valueOf(20))
+            .verifyNumberInvocations(1);
     }
 
     @Test
     public void getPurchaseAmount_evaluatePurchaseAmountWithoutFreightRate_returningOneHundred() {
-        FreightClient freightClient = mock(FreightClient.class);
-        ShoppingCart shoppingCart = mock(ShoppingCart.class);
-        User user = mock(User.class);
-
-        String zipCode = "85440000";
-
-        subject = new CheckoutService(freightClient, shoppingCart, new BigDecimal(100));
-
-        when(user.getZipCode()).thenReturn(zipCode);
-        when(shoppingCart.getUser()).thenReturn(user);
-        when(shoppingCart.getTotalCartValue()).thenReturn(BigDecimal.valueOf(100));
-        when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(BigDecimal.ZERO);
-
-        BigDecimal purchaseAmountWithoutFreightRate = subject.getPurchaseAmount();
-
-        verify(freightClient, atMost(0)).getFreightRateByZipCode(zipCode);
-
-        Assert.assertEquals(BigDecimal.valueOf(100), purchaseAmountWithoutFreightRate);
+        given()
+            .withoutFreightRate()
+        .when(subject::getPurchaseAmount)
+        .then()
+            .assertAmountCharged(BigDecimal.valueOf(100))
+            .verifyNumberInvocations(0);
     }
 
+    private CheckoutServiceTestDSL given() {
+        return new CheckoutServiceTestDSL();
+    }
+
+    private class CheckoutServiceTestDSL {
+        private final FreightClient freightClient = mock(FreightClient.class);
+        private final ShoppingCart shoppingCart = mock(ShoppingCart.class);
+        private final String zipCode = "85440000";
+        private BigDecimal result;
+
+        private CheckoutServiceTestDSL() {
+            User user = mock(User.class);
+            BigDecimal minimumValueForFreeShipping = BigDecimal.valueOf(100);
+
+            subject = new CheckoutService(freightClient, shoppingCart, minimumValueForFreeShipping);
+
+            Mockito.when(user.getZipCode()).thenReturn(zipCode);
+            Mockito.when(shoppingCart.getUser()).thenReturn(user);
+        }
+
+        private CheckoutServiceTestDSL withFreightRate() {
+            Mockito.when(shoppingCart.getTotalCartValue()).thenReturn(BigDecimal.TEN);
+            Mockito.when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(BigDecimal.TEN);
+            return this;
+        }
+
+        private CheckoutServiceTestDSL withoutFreightRate() {
+            Mockito.when(shoppingCart.getTotalCartValue()).thenReturn(BigDecimal.valueOf(100));
+            Mockito.when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(BigDecimal.ZERO);
+            return this;
+        }
+
+        private CheckoutServiceTestDSL when(Supplier<BigDecimal> supplier) {
+            result = supplier.get();
+            return this;
+        }
+
+        private CheckoutServiceTestDSLAsserter then() {
+            return new CheckoutServiceTestDSLAsserter();
+        }
+
+        private class CheckoutServiceTestDSLAsserter {
+            private CheckoutServiceTestDSLAsserter assertAmountCharged(BigDecimal expected) {
+                assertEquals(expected, result);
+                return this;
+            }
+
+            private void verifyNumberInvocations(int maxNumberInvocations) {
+                verify(freightClient, atMost(maxNumberInvocations)).getFreightRateByZipCode(zipCode);
+            }
+        }
+    }
 }
