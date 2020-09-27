@@ -27,7 +27,7 @@ public class CheckoutServiceTest {
         .when(subject::getPurchaseAmount)
         .then()
             .assertAmountCharged(BigDecimal.valueOf(20))
-            .verifyNumberInvocations(1);
+            .verifyNumberInvocationsOfService(1);
     }
 
     @Test
@@ -37,7 +37,7 @@ public class CheckoutServiceTest {
         .when(subject::getPurchaseAmount)
         .then()
             .assertAmountCharged(BigDecimal.valueOf(100))
-            .verifyNumberInvocations(0);
+            .verifyNumberInvocationsOfService(0);
     }
 
     private CheckoutServiceTestDSL given() {
@@ -87,7 +87,7 @@ public class CheckoutServiceTest {
                 return this;
             }
 
-            private void verifyNumberInvocations(int maxNumberInvocations) {
+            private void verifyNumberInvocationsOfService(int maxNumberInvocations) {
                 verify(freightClient, atMost(maxNumberInvocations)).getFreightRateByZipCode(zipCode);
             }
         }
