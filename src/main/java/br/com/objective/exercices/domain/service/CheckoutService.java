@@ -1,9 +1,9 @@
 package br.com.objective.exercices.domain.service;
 
+import java.math.BigDecimal;
+
 import br.com.objective.exercices.api.client.FreightClient;
 import br.com.objective.exercices.domain.model.ShoppingCart;
-
-import java.math.BigDecimal;
 
 public class CheckoutService {
 
