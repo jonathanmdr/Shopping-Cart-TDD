@@ -1,262 +1,236 @@
 package br.com.objective.exercices.domain.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.function.Supplier;
+
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class ShoppingCartTest {
 
     private ShoppingCart subject;
 
     @Test
-    public void constructor_constructShoppingCart_returningShoppingCartInstance() {
-        ShoppingCart shoppingCart = new ShoppingCart(new User(), new LinkedHashSet<>());
-        String shoppingCartString = shoppingCart.toString();
-
-        Assert.assertNotNull(shoppingCart);
-        Assert.assertNotNull(shoppingCart.getUser());
-        Assert.assertNotNull(shoppingCart.getItems());
-        Assert.assertEquals(shoppingCartString, shoppingCart.toString());
+    public void givenEmptyShoppingCart_whenExecuteGetTotalCartValue_shouldReturnZero() {
+        given()
+            .item()
+                .empty()
+            .end()
+        .when(subject::getTotalCartValue)
+        .then()
+            .assertTotalCartValue(BigDecimal.ZERO)
+            .assertTotalItems(0);
     }
 
     @Test
-    public void getTotalCartValue_evaluateEmptyShoppingCart_returningZero() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Set<CartItem> items = Collections.emptySet();
-
-        subject = new ShoppingCart(user, items);
-
-        Assert.assertEquals(BigDecimal.ZERO, subject.getTotalCartValue());
-        Assert.assertEquals(0, subject.getItems().size());
+    public void givenShoppingCartWithItems_whenExecuteGetTotalCartValues_shouldReturnTen() {
+        given()
+            .item()
+                .product()
+                    .name("Agenda")
+                    .value(BigDecimal.TEN)
+                .end()
+            .amount(1)
+            .includeToCart()
+        .when(subject::getTotalCartValue)
+        .then()
+            .assertTotalCartValue(BigDecimal.TEN)
+            .assertTotalItems(1);
     }
 
     @Test
-    public void getTotalCartValue_evaluateShoppingCartWithItems_returningTen() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        CartItem cartItem = CartItem.builder()
-                .product(product)
-                .build();
-        cartItem.add(1);
-
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-        subject.addItem(cartItem);
-
-        Assert.assertEquals(BigDecimal.TEN, subject.getTotalCartValue());
-        Assert.assertEquals(1, subject.getItems().size());
+    public void givenShoppingCartWithIdenticalItems_whenGetTotalCartValue_shouldReturnTwenty() {
+        given()
+            .item()
+                .product()
+                    .name("Agenda")
+                    .value(BigDecimal.TEN)
+                .end()
+            .amount(1)
+            .includeToCart()
+            .item()
+                .product()
+                    .name("Agenda")
+                    .value(BigDecimal.TEN)
+                .end()
+            .amount(1)
+            .includeToCart()
+        .when(subject::getTotalCartValue)
+        .then()
+            .assertTotalCartValue(BigDecimal.valueOf(20))
+           .assertTotalItems(1);
     }
 
     @Test
-    public void getTotalCartValue_evaluateShoppingCartWithIdenticalItems_returningTwenty() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Product product1 = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        Product product2 = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        CartItem cartItem1 = CartItem.builder()
-                .product(product1)
-                .build();
-        cartItem1.add(1);
-
-        CartItem cartItem2 = CartItem.builder()
-                .product(product2)
-                .build();
-        cartItem2.add(1);
-
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-        subject.addItem(cartItem1);
-        subject.addItem(cartItem2);
-
-        Assert.assertEquals(new BigDecimal(20), subject.getTotalCartValue());
-        Assert.assertEquals(1, subject.getItems().size());
+    public void givenShoppingCartWithDifferentItems_whenGetTotalCartValue_shouldReturnTwentyFive() {
+        given()
+            .item()
+                .product()
+                    .name("Agenda")
+                    .value(BigDecimal.TEN)
+                .end()
+            .amount(1)
+            .includeToCart()
+            .item()
+                .product()
+                    .name("Calendar")
+                    .value(BigDecimal.valueOf(15))
+                .end()
+            .amount(1)
+            .includeToCart()
+        .when(subject::getTotalCartValue)
+        .then()
+            .assertTotalCartValue(BigDecimal.valueOf(25))
+            .assertTotalItems(2);
     }
 
     @Test
-    public void getTotalCartValue_evaluateShoppingCartWithDifferentItems_returningTwentyFive() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Product product1 = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        Product product2 = Product.builder()
-                .name("Calendar")
-                .value(new BigDecimal(15))
-                .build();
-
-        CartItem cartItem1 = CartItem.builder()
-                .product(product1)
-                .build();
-        cartItem1.add(1);
-
-        CartItem cartItem2 = CartItem.builder()
-                .product(product2)
-                .build();
-        cartItem2.add(1);
-
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-        subject.addItem(cartItem1);
-        subject.addItem(cartItem2);
-
-        Assert.assertEquals(new BigDecimal(25), subject.getTotalCartValue());
-        Assert.assertEquals(2, subject.getItems().size());
+    public void givenShoppingCartAddAndRemoveItem_whenGetTotalCartValue_shouldReturnFifteen() {
+        given()
+            .item()
+                .product()
+                    .name("Agenda")
+                    .value(BigDecimal.TEN)
+                .end()
+            .amount(1)
+            .includeToCart()
+            .item()
+                .product()
+                    .name("Calendar")
+                    .value(BigDecimal.valueOf(15))
+                .end()
+            .amount(1)
+            .includeToCart()
+            .item()
+                .product()
+                    .name("Agenda")
+                    .value(BigDecimal.TEN)
+                .end()
+            .amount(1)
+            .removeToCart()
+        .when(subject::getTotalCartValue)
+        .then()
+            .assertTotalCartValue(BigDecimal.valueOf(15))
+            .assertTotalItems(1);
     }
 
-    @Test
-    public void getTotalCartValue_evaluateShoppingCartWithRemovalItem_returningTen() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Product product1 = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        Product product2 = Product.builder()
-                .name("Calendar")
-                .value(new BigDecimal(15))
-                .build();
-
-        CartItem cartItem1 = CartItem.builder()
-                .product(product1)
-                .build();
-        cartItem1.add(1);
-
-        CartItem cartItem2 = CartItem.builder()
-                .product(product2)
-                .build();
-        cartItem2.add(1);
-
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-        subject.addItem(cartItem1);
-        subject.addItem(cartItem2);
-
-        Assert.assertEquals(new BigDecimal(25), subject.getTotalCartValue());
-        Assert.assertEquals(2, subject.getItems().size());
-
-        subject.removeItem(cartItem2);
-
-        Assert.assertEquals(BigDecimal.TEN, subject.getTotalCartValue());
-        Assert.assertEquals(1, subject.getItems().size());
+    private ShoppingCartTestDSL given() {
+        return new ShoppingCartTestDSL()
+                .user()
+                    .name("Jonathan Henrique")
+                    .zipCode("85440000")
+                .end();
     }
 
-    @Test
-    public void getTotalCartValue_evaluateShoppingCartWithReducingAmountOfItems_returningFifty() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
+    private class ShoppingCartTestDSL {
+        private final User user = mock(User.class);
+        private BigDecimal result;
 
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
+        private ShoppingCartTestDSL() {
+            subject = new ShoppingCart(user, new LinkedHashSet<>());
+        }
 
-        CartItem cartItem = CartItem.builder()
-                .product(product)
-                .build();
-        cartItem.add(10);
+        private UserMocker user() {
+            return new UserMocker();
+        }
 
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-        subject.addItem(cartItem);
+        private CartItemMocker item() {
+            return new CartItemMocker();
+        }
 
-        Assert.assertEquals(Integer.valueOf(10), cartItem.getAmount());
-        Assert.assertEquals(new BigDecimal(100), subject.getTotalCartValue());
-        Assert.assertEquals(1, subject.getItems().size());
+        private ShoppingCartTestDSL when(Supplier<BigDecimal> supplier) {
+            result = supplier.get();
+            return this;
+        }
 
-        cartItem.remove(5);
+        private ShoppingCartTestDSLAsserter then() {
+            return new ShoppingCartTestDSLAsserter();
+        }
 
-        Assert.assertEquals(Integer.valueOf(5), cartItem.getAmount());
-        Assert.assertEquals(new BigDecimal(50), subject.getTotalCartValue());
-        Assert.assertEquals(1, subject.getItems().size());
+        private class UserMocker {
+            private String name;
+            private String zipCode;
+
+            private UserMocker name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            private UserMocker zipCode(String zipCode) {
+                this.zipCode = zipCode;
+                return this;
+            }
+
+            private ShoppingCartTestDSL end() {
+                Mockito.when(user.getName()).thenReturn(name);
+                Mockito.when(user.getZipCode()).thenReturn(zipCode);
+                return ShoppingCartTestDSL.this;
+            }
+        }
+
+        private class CartItemMocker {
+            private final CartItem cartItem = new CartItem();
+            private final Product product = new Product();
+
+            private CartItemMocker empty() {
+                return this;
+            }
+
+            private ProductMocker product() {
+                return new ProductMocker();
+            }
+
+            private CartItemMocker amount(Integer amount) {
+                cartItem.add(amount);
+                return this;
+            }
+
+            private ShoppingCartTestDSL includeToCart() {
+                cartItem.setProduct(product);
+                subject.addItem(cartItem);
+                return ShoppingCartTestDSL.this;
+            }
+
+            private ShoppingCartTestDSL removeToCart() {
+                cartItem.setProduct(product);
+                subject.removeItem(cartItem);
+                return ShoppingCartTestDSL.this;
+            }
+
+            private ShoppingCartTestDSL end() {
+                return ShoppingCartTestDSL.this;
+            }
+
+            private class ProductMocker {
+                private ProductMocker name(String name) {
+                    product.setName(name);
+                    return this;
+                }
+
+                private ProductMocker value(BigDecimal value) {
+                    product.setValue(value);
+                    return this;
+                }
+
+                private CartItemMocker end() {
+                    return CartItemMocker.this;
+                }
+            }
+        }
+
+        private class ShoppingCartTestDSLAsserter {
+            private ShoppingCartTestDSLAsserter assertTotalCartValue(BigDecimal expected) {
+                assertEquals(expected, result);
+                return this;
+            }
+
+            private void assertTotalItems(int expected) {
+                assertEquals(expected, subject.getItems().size());
+            }
+        }
     }
-
-    @Test
-    public void addItem_addItemInShoppingCart_evaluateItemsAmount() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        CartItem cartItem = CartItem.builder()
-                .product(product)
-                .build();
-        cartItem.add(10);
-
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-
-        Assert.assertEquals(0, subject.getItems().size());
-
-        subject.addItem(cartItem);
-
-        Assert.assertEquals(1, subject.getItems().size());
-    }
-
-    @Test
-    public void removeItem_removeItemOfShoppingCart_evaluateItemsAmount() {
-        User user = User.builder()
-                .name("Jonathan Henrique")
-                .zipCode("85440000")
-                .build();
-
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        CartItem cartItem = CartItem.builder()
-                .product(product)
-                .build();
-        cartItem.add(10);
-
-        subject = new ShoppingCart(user, new LinkedHashSet<>());
-
-        Assert.assertEquals(0, subject.getItems().size());
-
-        subject.addItem(cartItem);
-
-        Assert.assertEquals(1, subject.getItems().size());
-
-        subject.removeItem(cartItem);
-
-        Assert.assertEquals(0, subject.getItems().size());
-    }
-
 }

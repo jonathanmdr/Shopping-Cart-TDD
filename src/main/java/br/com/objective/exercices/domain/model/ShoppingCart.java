@@ -1,11 +1,11 @@
 package br.com.objective.exercices.domain.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor
@@ -40,5 +40,4 @@ public class ShoppingCart {
                 .filter(item -> item.getProduct().equals(product))
                 .findFirst();
     }
-
 }

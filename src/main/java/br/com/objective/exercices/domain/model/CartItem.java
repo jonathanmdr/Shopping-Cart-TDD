@@ -1,7 +1,12 @@
 package br.com.objective.exercices.domain.model;
 
 import br.com.objective.exercices.domain.exception.InvalidAmountException;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
