@@ -1,159 +1,129 @@
 package br.com.objective.exercices.domain.model;
 
-import br.com.objective.exercices.domain.exception.InvalidAmountException;
+import static br.com.objective.exercices.domain.model.CartItem.DEFAULT_MESSAGE_EXCEPTION;
+
+import java.util.function.IntConsumer;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.math.BigDecimal;
+import br.com.objective.exercices.domain.exception.InvalidAmountException;
+import br.com.objective.exercices.domain.generics.CartItemMocker;
 
 public class CarItemTest {
 
     private CartItem subject;
 
     @Test
-    public void constructor_constructCartItem_returningCartItemInstance() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
+    public void givenAddTenItems_whenExecuteAddItem_shouldReturnTen() {
+        given()
+            .item()
+            .end()
+        .when()
+            .execute(subject::add, 10)
+        .then()
+            .assertAmount(10);
 
-        CartItem cartItemNoArgs = new CartItem();
-
-        Assert.assertNotNull(cartItemNoArgs);
-        Assert.assertNull(cartItemNoArgs.getProduct());
-        Assert.assertNull(cartItemNoArgs.getAmount());
-        cartItemNoArgs.setProduct(product);
-        cartItemNoArgs.add(1);
-        Assert.assertNotNull(cartItemNoArgs.getProduct());
-        Assert.assertNotNull(cartItemNoArgs.getAmount());
-
-        CartItem cartItemAllArgs = new CartItem(product);
-
-        Assert.assertNotNull(cartItemAllArgs);
-        Assert.assertNotNull(cartItemAllArgs.getProduct());
-        Assert.assertNull(cartItemAllArgs.getAmount());
-        cartItemAllArgs.add(1);
-        Assert.assertNotNull(cartItemAllArgs.getAmount());
-
-        CartItem cartItemBuilder = CartItem.builder()
-                .product(product)
-                .build();
-
-        Assert.assertNotNull(cartItemBuilder);
-        Assert.assertNotNull(cartItemBuilder.getProduct());
-        Assert.assertNull(cartItemBuilder.getAmount());
-        cartItemBuilder.add(1);
-        Assert.assertNotNull(cartItemBuilder.getAmount());
     }
 
     @Test
-    public void addItem_evaluateAmountCarItem_returningTen() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.add(10);
-
-        Assert.assertEquals(Integer.valueOf(10), subject.getAmount());
-    }
-
-    @Test(expected = InvalidAmountException.class)
-    public void addItem_evaluateInvalidAmountCarItem_returningInvalidAmountException() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.add(0);
-    }
-
-    @Test(expected = InvalidAmountException.class)
-    public void addItem_evaluateInvalidAmountCarItemScenario2_returningInvalidAmountException() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.add(-10);
+    public void givenAddTenItemsAndRemoveFiveItems_whenExecuteRemoveItem_shouldReturnFive() {
+        given()
+            .item()
+            .end()
+        .when()
+            .execute(subject::add, 10)
+        .and()
+        .when()
+            .execute(subject::remove, 5)
+        .then()
+            .assertAmount(5);
     }
 
     @Test
-    public void removeItem_evaluateAmountCarItem_returningFive() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.add(10);
-
-        Assert.assertEquals(Integer.valueOf(10), subject.getAmount());
-
-        subject.remove(5);
-
-        Assert.assertEquals(Integer.valueOf(5), subject.getAmount());
+    public void givenAddInvalidAmount_whenExecuteAddItem_shouldReturnInvalidAmountException() {
+        given()
+            .item()
+            .end()
+        .when()
+            .execute(subject::add, 0)
+        .then()
+            .assertMessageError(DEFAULT_MESSAGE_EXCEPTION);
     }
 
-    @Test(expected = InvalidAmountException.class)
-    public void removeItem_evaluateInvalidAmountCarItem_returningInvalidAmountException() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.remove(0);
+    @Test
+    public void givenRemoveInvalidAmount_whenExecuteRemoveItem_shouldReturnInvalidAmountException() {
+        given()
+            .item()
+            .end()
+        .when()
+            .execute(subject::remove, 0)
+        .then()
+            .assertMessageError(DEFAULT_MESSAGE_EXCEPTION);
     }
 
-    @Test(expected = InvalidAmountException.class)
-    public void removeItem_evaluateInvalidAmountCarItemScenario2_returningInvalidAmountException() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.remove(-10);
+    @Test
+    public void givenRemoveExcessiveAmount_whenEvaluateAmountCarItem_shouldReturnInvalidAmountException() {
+        given()
+            .item()
+            .end()
+        .when()
+            .execute(subject::add, 10)
+        .and()
+        .when()
+            .execute(subject::remove, 20)
+        .then()
+            .assertMessageError(DEFAULT_MESSAGE_EXCEPTION);
     }
 
-    @Test(expected = InvalidAmountException.class)
-    public void removeItem_evaluateInvalidAmountCarItemScenario3_returningInvalidAmountException() {
-        Product product = Product.builder()
-                .name("Agenda")
-                .value(BigDecimal.TEN)
-                .build();
-
-        subject = CartItem.builder()
-                .product(product)
-                .build();
-
-        subject.add(10);
-
-        Assert.assertEquals(Integer.valueOf(10), subject.getAmount());
-
-        subject.remove(20);
+    private CarItemTestDSL given() {
+        return new CarItemTestDSL();
     }
 
+    private class CarItemTestDSL {
+        private Integer result;
+        private String message;
+
+        private CarItemTestDSL() {
+            subject = new CartItem();
+        }
+
+        private CartItemMocker<CarItemTestDSL> item() {
+            return new CartItemMocker<>(subject, this);
+        }
+
+        private CartItemTestDSLExecutor when() {
+            return new CartItemTestDSLExecutor();
+        }
+
+        private class CartItemTestDSLExecutor {
+            private CartItemTestDSLExecutor execute(IntConsumer consumer, Integer amount) {
+                try {
+                    consumer.accept(amount);
+                    result = amount;
+                } catch (InvalidAmountException ex) {
+                    message = ex.getMessage();
+                }
+                return this;
+            }
+
+            private CarItemTestDSL and() {
+                return CarItemTestDSL.this;
+            }
+
+            private CarItemTestDSLAsserter then() {
+                return new CarItemTestDSLAsserter();
+            }
+
+            private class CarItemTestDSLAsserter {
+                private void assertAmount(Integer expectedAmount) {
+                    Assert.assertEquals(expectedAmount, result);
+                }
+
+                private void assertMessageError(String expectedMessage) {
+                    Assert.assertEquals(expectedMessage, message);
+                }
+            }
+        }
+    }
 }
