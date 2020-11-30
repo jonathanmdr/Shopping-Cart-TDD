@@ -30,11 +30,6 @@ public class CartItemMocker<T> {
         return this;
     }
 
-    public CartItemMocker<T> remove(Integer amount) {
-        cartItem.remove(amount);
-        return this;
-    }
-
     public T end() {
         return dsl;
     }
