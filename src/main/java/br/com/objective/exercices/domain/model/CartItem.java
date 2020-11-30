@@ -13,7 +13,7 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CartItem {
 
-    private static final String DEFAULT_MESSAGE_EXCEPTION = "Quantity item cannot be less than or equal to zero.";
+    public static final String DEFAULT_MESSAGE_EXCEPTION = "Quantity item cannot be less than or equal to zero.";
 
     @Builder
     public CartItem(Product product) {
