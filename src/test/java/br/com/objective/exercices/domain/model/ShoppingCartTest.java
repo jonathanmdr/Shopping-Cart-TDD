@@ -1,14 +1,15 @@
 package br.com.objective.exercices.domain.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.function.Supplier;
 
 import org.junit.Test;
-import org.mockito.Mockito;
+
+import br.com.objective.exercices.domain.generics.CartItemMocker;
+import br.com.objective.exercices.domain.generics.UserMocker;
 
 public class ShoppingCartTest {
 
@@ -34,7 +35,8 @@ public class ShoppingCartTest {
                     .name("Agenda")
                     .value(BigDecimal.TEN)
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
         .when(subject::getTotalCartValue)
         .then()
@@ -50,14 +52,16 @@ public class ShoppingCartTest {
                     .name("Agenda")
                     .value(BigDecimal.TEN)
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
             .item()
                 .product()
                     .name("Agenda")
                     .value(BigDecimal.TEN)
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
         .when(subject::getTotalCartValue)
         .then()
@@ -73,14 +77,16 @@ public class ShoppingCartTest {
                     .name("Agenda")
                     .value(BigDecimal.TEN)
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
             .item()
                 .product()
                     .name("Calendar")
                     .value(BigDecimal.valueOf(15))
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
         .when(subject::getTotalCartValue)
         .then()
@@ -96,21 +102,24 @@ public class ShoppingCartTest {
                     .name("Agenda")
                     .value(BigDecimal.TEN)
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
             .item()
                 .product()
                     .name("Calendar")
                     .value(BigDecimal.valueOf(15))
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .includeToCart()
             .item()
                 .product()
                     .name("Agenda")
                     .value(BigDecimal.TEN)
                 .end()
-            .amount(1)
+                .add(1)
+            .end()
             .removeToCart()
         .when(subject::getTotalCartValue)
         .then()
@@ -127,19 +136,31 @@ public class ShoppingCartTest {
     }
 
     private class ShoppingCartTestDSL {
-        private final User user = mock(User.class);
+        private final User user = new User();
+        private CartItem cartItem;
         private BigDecimal result;
 
         private ShoppingCartTestDSL() {
             subject = new ShoppingCart(user, new LinkedHashSet<>());
         }
 
-        private UserMocker user() {
-            return new UserMocker();
+        private UserMocker<ShoppingCartTestDSL> user() {
+            return new UserMocker<>(user, this);
         }
 
-        private CartItemMocker item() {
-            return new CartItemMocker();
+        private CartItemMocker<ShoppingCartTestDSL> item() {
+            cartItem = new CartItem();
+            return new CartItemMocker<>(cartItem, this);
+        }
+
+        private ShoppingCartTestDSL includeToCart() {
+            subject.addItem(cartItem);
+            return this;
+        }
+
+        private ShoppingCartTestDSL removeToCart() {
+            subject.removeItem(cartItem);
+            return this;
         }
 
         private ShoppingCartTestDSL when(Supplier<BigDecimal> supplier) {
@@ -149,77 +170,6 @@ public class ShoppingCartTest {
 
         private ShoppingCartTestDSLAsserter then() {
             return new ShoppingCartTestDSLAsserter();
-        }
-
-        private class UserMocker {
-            private String name;
-            private String zipCode;
-
-            private UserMocker name(String name) {
-                this.name = name;
-                return this;
-            }
-
-            private UserMocker zipCode(String zipCode) {
-                this.zipCode = zipCode;
-                return this;
-            }
-
-            private ShoppingCartTestDSL end() {
-                Mockito.when(user.getName()).thenReturn(name);
-                Mockito.when(user.getZipCode()).thenReturn(zipCode);
-                return ShoppingCartTestDSL.this;
-            }
-        }
-
-        private class CartItemMocker {
-            private final CartItem cartItem = new CartItem();
-            private final Product product = new Product();
-
-            private CartItemMocker empty() {
-                return this;
-            }
-
-            private ProductMocker product() {
-                return new ProductMocker();
-            }
-
-            private CartItemMocker amount(Integer amount) {
-                cartItem.add(amount);
-                return this;
-            }
-
-            private ShoppingCartTestDSL includeToCart() {
-                cartItem.setProduct(product);
-                subject.addItem(cartItem);
-                return ShoppingCartTestDSL.this;
-            }
-
-            private ShoppingCartTestDSL removeToCart() {
-                cartItem.setProduct(product);
-                subject.removeItem(cartItem);
-                return ShoppingCartTestDSL.this;
-            }
-
-            private ShoppingCartTestDSL end() {
-                return ShoppingCartTestDSL.this;
-            }
-
-            private class ProductMocker {
-                private ProductMocker name(String name) {
-                    product.setName(name);
-                    return this;
-                }
-
-                private ProductMocker value(BigDecimal value) {
-                    product.setValue(value);
-                    return this;
-                }
-
-                private CartItemMocker end() {
-                    return CartItemMocker.this;
-                }
-            }
         }
 
         private class ShoppingCartTestDSLAsserter {
