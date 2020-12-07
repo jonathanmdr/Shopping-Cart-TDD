@@ -1,10 +1,10 @@
 package br.com.objective.exercices.domain.model;
 
 import static br.com.objective.exercices.domain.model.CartItem.DEFAULT_MESSAGE_EXCEPTION;
+import static org.junit.Assert.assertEquals;
 
 import java.util.function.IntConsumer;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import br.com.objective.exercices.domain.exception.InvalidAmountException;
@@ -81,7 +81,6 @@ public class CarItemTest {
     }
 
     private class CarItemTestDSL {
-        private Integer result;
         private String message;
 
         private CarItemTestDSL() {
@@ -100,7 +99,6 @@ public class CarItemTest {
             private CartItemTestDSLExecutor execute(IntConsumer consumer, Integer amount) {
                 try {
                     consumer.accept(amount);
-                    result = amount;
                 } catch (InvalidAmountException ex) {
                     message = ex.getMessage();
                 }
@@ -117,11 +115,11 @@ public class CarItemTest {
 
             private class CarItemTestDSLAsserter {
                 private void assertAmount(Integer expectedAmount) {
-                    Assert.assertEquals(expectedAmount, result);
+                    assertEquals(expectedAmount, subject.getAmount());
                 }
 
                 private void assertMessageError(String expectedMessage) {
-                    Assert.assertEquals(expectedMessage, message);
+                    assertEquals(expectedMessage, message);
                 }
             }
         }
