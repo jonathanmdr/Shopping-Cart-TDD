@@ -81,8 +81,6 @@ public class CarItemTest {
     }
 
     private class CarItemTestDSL {
-        private String message;
-
         private CarItemTestDSL() {
             subject = new CartItem();
         }
@@ -96,6 +94,8 @@ public class CarItemTest {
         }
 
         private class CartItemTestDSLExecutor {
+            private String message;
+
             private CartItemTestDSLExecutor execute(IntConsumer consumer, Integer amount) {
                 try {
                     consumer.accept(amount);
