@@ -48,7 +48,7 @@ public class CarItemTest {
         .when()
             .execute(subject::add, 0)
         .then()
-            .assertMessageError(DEFAULT_MESSAGE_EXCEPTION);
+            .assertMessageError();
     }
 
     @Test
@@ -59,7 +59,7 @@ public class CarItemTest {
         .when()
             .execute(subject::remove, 0)
         .then()
-            .assertMessageError(DEFAULT_MESSAGE_EXCEPTION);
+            .assertMessageError();
     }
 
     @Test
@@ -73,7 +73,7 @@ public class CarItemTest {
         .when()
             .execute(subject::remove, 20)
         .then()
-            .assertMessageError(DEFAULT_MESSAGE_EXCEPTION);
+            .assertMessageError();
     }
 
     private CarItemTestDSL given() {
@@ -118,8 +118,8 @@ public class CarItemTest {
                     assertEquals(expectedAmount, subject.getAmount());
                 }
 
-                private void assertMessageError(String expectedMessage) {
-                    assertEquals(expectedMessage, message);
+                private void assertMessageError() {
+                    assertEquals(DEFAULT_MESSAGE_EXCEPTION, message);
                 }
             }
         }

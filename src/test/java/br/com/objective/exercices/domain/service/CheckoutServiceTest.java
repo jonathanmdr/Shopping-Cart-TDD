@@ -12,6 +12,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static java.math.BigDecimal.valueOf;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -26,7 +29,7 @@ public class CheckoutServiceTest {
             .withFreightRate()
         .when(subject::getPurchaseAmount)
         .then()
-            .assertAmountCharged(BigDecimal.valueOf(20))
+            .assertAmountCharged(valueOf(20))
             .verifyNumberInvocationsOfService(1);
     }
 
@@ -36,7 +39,7 @@ public class CheckoutServiceTest {
             .withoutFreightRate()
         .when(subject::getPurchaseAmount)
         .then()
-            .assertAmountCharged(BigDecimal.valueOf(100))
+            .assertAmountCharged(valueOf(100))
             .verifyNumberInvocationsOfService(0);
     }
 
@@ -52,7 +55,7 @@ public class CheckoutServiceTest {
 
         private CheckoutServiceTestDSL() {
             User user = mock(User.class);
-            BigDecimal minimumValueForFreeShipping = BigDecimal.valueOf(100);
+            BigDecimal minimumValueForFreeShipping = valueOf(100);
 
             subject = new CheckoutService(freightClient, shoppingCart, minimumValueForFreeShipping);
 
@@ -61,14 +64,14 @@ public class CheckoutServiceTest {
         }
 
         private CheckoutServiceTestDSL withFreightRate() {
-            Mockito.when(shoppingCart.getTotalCartValue()).thenReturn(BigDecimal.TEN);
-            Mockito.when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(BigDecimal.TEN);
+            Mockito.when(shoppingCart.getTotalCartValue()).thenReturn(TEN);
+            Mockito.when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(TEN);
             return this;
         }
 
         private CheckoutServiceTestDSL withoutFreightRate() {
-            Mockito.when(shoppingCart.getTotalCartValue()).thenReturn(BigDecimal.valueOf(100));
-            Mockito.when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(BigDecimal.ZERO);
+            Mockito.when(shoppingCart.getTotalCartValue()).thenReturn(valueOf(100));
+            Mockito.when(freightClient.getFreightRateByZipCode(zipCode)).thenReturn(ZERO);
             return this;
         }
 

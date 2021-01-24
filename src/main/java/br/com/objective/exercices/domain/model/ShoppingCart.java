@@ -1,5 +1,8 @@
 package br.com.objective.exercices.domain.model;
 
+import static java.math.BigDecimal.ZERO;
+import static java.math.BigDecimal.valueOf;
+
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
@@ -15,29 +18,28 @@ public class ShoppingCart {
     private Set<CartItem> items;
 
     public void addItem(CartItem cartItem) {
-        Optional<CartItem> existentItem = findCartItemByProduct(cartItem.getProduct());
-
-        existentItem.ifPresentOrElse(
-                (item) -> item.add(cartItem.getAmount()),
-                () -> items.add(cartItem)
-        );
+        findCartItemByProduct(cartItem.getProduct())
+                .ifPresentOrElse(item -> item.add(cartItem.getAmount()), () -> items.add(cartItem));
     }
 
     public void removeItem(CartItem cartItem) {
-        Optional<CartItem> existentItem = findCartItemByProduct(cartItem.getProduct());
-
-        existentItem.ifPresent((item) -> items.remove(item));
+        findCartItemByProduct(cartItem.getProduct())
+                .ifPresent(item -> items.remove(item));
     }
 
     public BigDecimal getTotalCartValue() {
         return items.parallelStream()
-                .map(item -> item.getProduct().getValue().multiply(BigDecimal.valueOf(item.getAmount())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(ShoppingCart::evaluateItemValue)
+                .reduce(ZERO, BigDecimal::add);
     }
 
     private Optional<CartItem> findCartItemByProduct(Product product) {
         return items.parallelStream()
                 .filter(item -> item.getProduct().equals(product))
                 .findFirst();
+    }
+
+    private static BigDecimal evaluateItemValue(CartItem item) {
+        return item.getProduct().getValue().multiply(valueOf(item.getAmount()));
     }
 }

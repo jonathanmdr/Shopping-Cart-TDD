@@ -1,5 +1,8 @@
 package br.com.objective.exercices.domain.model;
 
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static java.math.BigDecimal.valueOf;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
@@ -23,7 +26,7 @@ public class ShoppingCartTest {
             .end()
         .when(subject::getTotalCartValue)
         .then()
-            .assertTotalCartValue(BigDecimal.ZERO)
+            .assertTotalCartValue(ZERO)
             .assertTotalItems(0);
     }
 
@@ -33,14 +36,14 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Agenda")
-                    .value(BigDecimal.TEN)
+                    .value(TEN)
                 .end()
                 .add(1)
             .end()
             .includeToCart()
         .when(subject::getTotalCartValue)
         .then()
-            .assertTotalCartValue(BigDecimal.TEN)
+            .assertTotalCartValue(TEN)
             .assertTotalItems(1);
     }
 
@@ -50,7 +53,7 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Agenda")
-                    .value(BigDecimal.TEN)
+                    .value(TEN)
                 .end()
                 .add(1)
             .end()
@@ -58,14 +61,14 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Agenda")
-                    .value(BigDecimal.TEN)
+                    .value(TEN)
                 .end()
                 .add(1)
             .end()
             .includeToCart()
         .when(subject::getTotalCartValue)
         .then()
-            .assertTotalCartValue(BigDecimal.valueOf(20))
+            .assertTotalCartValue(valueOf(20))
            .assertTotalItems(1);
     }
 
@@ -75,7 +78,7 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Agenda")
-                    .value(BigDecimal.TEN)
+                    .value(TEN)
                 .end()
                 .add(1)
             .end()
@@ -83,14 +86,14 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Calendar")
-                    .value(BigDecimal.valueOf(15))
+                    .value(valueOf(15))
                 .end()
                 .add(1)
             .end()
             .includeToCart()
         .when(subject::getTotalCartValue)
         .then()
-            .assertTotalCartValue(BigDecimal.valueOf(25))
+            .assertTotalCartValue(valueOf(25))
             .assertTotalItems(2);
     }
 
@@ -100,7 +103,7 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Agenda")
-                    .value(BigDecimal.TEN)
+                    .value(TEN)
                 .end()
                 .add(1)
             .end()
@@ -108,7 +111,7 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Calendar")
-                    .value(BigDecimal.valueOf(15))
+                    .value(valueOf(15))
                 .end()
                 .add(1)
             .end()
@@ -116,14 +119,14 @@ public class ShoppingCartTest {
             .item()
                 .product()
                     .name("Agenda")
-                    .value(BigDecimal.TEN)
+                    .value(TEN)
                 .end()
                 .add(1)
             .end()
             .removeToCart()
         .when(subject::getTotalCartValue)
         .then()
-            .assertTotalCartValue(BigDecimal.valueOf(15))
+            .assertTotalCartValue(valueOf(15))
             .assertTotalItems(1);
     }
 
